@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ticker Panel Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: a sticky "map" of the panel on the left (the panel's real top-to-bottom order), one numbered-callout diagram per section on the right. Colours copied from the bot's dashboard so the diagrams match the screen. */
+:root{
+  --bg:#f6f6f3;--surface:#fdfdfb;--ink:#121212;--ink2:#4e4d49;--muted:#87857e;--grid:#e3e2db;--axis:#c3c2b7;
+  --buy:#2a78d6;--sell:#eb6834;--up:#006300;--down:#d03b3b;--series:#2a78d6;
+  --call:#a3307a;--callbg:#f7e9f2;--look:#eef4e8;--lookbd:#7da35a;
+  --display:"Space Grotesk",system-ui,sans-serif;--body:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141413;--surface:#1c1c1a;--ink:#f0efec;--ink2:#c3c2b7;--muted:#8e8c85;--grid:#2e2e2b;--axis:#46453f;
+  --buy:#3987e5;--sell:#d95926;--up:#0ca30c;--down:#e66767;--series:#3987e5;
+  --call:#e07bbd;--callbg:#3a2032;--look:#1f2a19;--lookbd:#5f8a3d;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141413;--surface:#1c1c1a;--ink:#f0efec;--ink2:#c3c2b7;--muted:#8e8c85;--grid:#2e2e2b;--axis:#46453f;
+  --buy:#3987e5;--sell:#d95926;--up:#0ca30c;--down:#e66767;--series:#3987e5;
+  --call:#e07bbd;--callbg:#3a2032;--look:#1f2a19;--lookbd:#5f8a3d;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h1{font-size:34px;line-height:1.1;letter-spacing:-.01em}
+h2{font-size:23px;line-height:1.2}
+h3{font-size:16px}
+p{margin:0}
+.lede{color:var(--ink2);max-width:66ch;font-size:16px}
+header.top{display:grid;gap:12px;margin-bottom:28px;grid-column:1/-1}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--mono);font-size:12px;border:1px solid var(--grid);background:var(--surface);border-radius:999px;padding:3px 10px;color:var(--ink2)}
+/* panel map */
+nav.map{position:sticky;top:max(16px,env(safe-area-inset-top,0px));align-self:start;display:grid;gap:6px}
+nav.map .frame{border:1.5px solid var(--axis);border-radius:10px;background:var(--surface);padding:8px;display:grid;gap:5px}
+nav.map a{display:flex;gap:8px;align-items:center;text-decoration:none;color:var(--ink);font-size:13px;line-height:1.25;padding:6px 8px;border-radius:6px;border:1px solid var(--grid);background:var(--bg)}
+nav.map a:hover,nav.map a:focus-visible{border-color:var(--call);outline:none}
+nav.map a .n{font-family:var(--mono);font-size:11px;color:var(--muted);min-width:16px}
+nav.map a.tiles{background:repeating-linear-gradient(90deg,var(--bg) 0 18%,var(--grid) 18% 19.5%)}
+nav.map a.tall{min-height:46px}
+nav.map .cap{font-size:12px;color:var(--muted)}
+main{display:grid;gap:56px;min-width:0}
+section.sec{display:grid;gap:16px;scroll-margin-top:20px;min-width:0}
+.sechead{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.sechead .num{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.what{color:var(--ink2);max-width:70ch}
+.fig{background:var(--surface);border:1px solid var(--grid);border-radius:10px;padding:14px;overflow-x:auto}
+.fig svg{display:block;width:100%;height:auto}
+.fig.wide svg{min-width:640px}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+ol.callouts{list-style:none;margin:0;padding:0;display:grid;gap:9px;max-width:78ch}
+ol.callouts li{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start}
+.badge{width:22px;height:22px;border-radius:50%;background:var(--call);color:var(--surface);font:600 12px/22px var(--mono);text-align:center}
+.look{background:var(--look);border:1px solid var(--lookbd);border-radius:10px;padding:12px 14px;display:grid;gap:4px;max-width:86ch}
+.look b.k{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);font-weight:600}
+table.rules{border-collapse:collapse;width:100%;font-size:14px}
+table.rules th,table.rules td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--grid)}
+table.rules th{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--grid);border-radius:10px}
+.tbl table{min-width:640px}
+code,.m{font-family:var(--mono);font-size:.92em}
+.note{font-size:13px;color:var(--muted);max-width:80ch}
+/* svg text classes */
+svg text{font-family:var(--body);font-size:12px;fill:var(--ink)}
+svg .mono{font-family:var(--mono)}
+svg .t2{fill:var(--ink2)}svg .mut{fill:var(--muted)}
+svg .cl{fill:var(--call)}svg .up{fill:var(--up)}svg .dn{fill:var(--down)}
+svg .bold{font-weight:600}
+@media (max-width:860px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:24px}
+  nav.map{position:static}
+  nav.map .frame{grid-template-columns:repeat(2,minmax(0,1fr))}
+  nav.map a.tall{min-height:0}
+  .cols{grid-template-columns:minmax(0,1fr)}
+  h1{font-size:28px}
+}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+img{max-width:100%}[hidden]{display:none!important}
+.back{font-size:13px;color:var(--ink2)}
+</style>
+</head><body>
+
+<div class="wrap">
+<header class="top">
+  <span class="eyebrow">Footprint bot · Live watch → click a ticker</span>
+  <h1>Ticker panel guide</h1>
+  <p class="lede">Every section of the side panel that opens when you click a row in Live watch, top to bottom. Each one has a drawing with numbered callouts and a green "before an alert" line. The thresholds come from the bot's code and your current config, so the numbers here are the ones the bot really uses.</p>
+  <div class="chips"><span class="chip">absorption 22% · 200 sh</span><span class="chip">imbalance 3× · 200 sh</span><span class="chip">3 stacked needed</span><span class="chip">level = within 3¢</span><span class="chip">absorption_mode = trend</span><span class="chip">stacked confirm on</span><span class="chip">divergence 5 bars</span></div>
+  <p class="note">Drawings use made-up MU numbers so the parts are easy to see. If you change a setting in the Settings tab, the panel follows the new value (the gauge line and "3 needed" are read live), but this page won't.</p>
+</header>
+
+<nav class="map" aria-label="Panel sections">
+  <span class="eyebrow">The panel, top to bottom</span>
+  <div class="frame">
+    <a href="#s1"><span class="n">1</span>Header and buttons</a>
+    <a href="#s2" class="tiles"><span class="n">2</span>Five tiles</a>
+    <a href="#s3"><span class="n">3</span>Setting up on the forming bar</a>
+    <a href="#s4" class="tall"><span class="n">4</span>Today, 1-min candles with your levels</a>
+    <a href="#s5" class="tall"><span class="n">5</span>Footprint, latest bars</a>
+    <a href="#s6"><span class="n">6</span>Session profile</a>
+    <a href="#s7"><span class="n">7</span>Levels the bot alerts at</a>
+    <a href="#s8"><span class="n">8</span>Today's alerts</a>
+    <a href="#s9"><span class="n">9</span>Notes</a>
+  </div>
+  <span class="cap">Esc or Close ✕ shuts the panel. It refreshes with the dashboard, every few seconds.</span>
+</nav>
+
+<main>
+
+<!-- 1 header -->
+<section class="sec" id="s1">
+  <div class="sechead"><span class="num">1</span><h2>Header and buttons</h2></div>
+  <p class="what">Which stock you're looking at, and which minute the numbers below belong to.</p>
+  <div class="fig"><svg viewBox="0 0 720 112" role="img" aria-label="Panel header: MU, bar 11:42 ET forming, Open in Profile tab button, Close button">
+    <rect x="1" y="14" width="718" height="56" rx="8" fill="var(--surface)" stroke="var(--axis)"/>
+    <text x="20" y="50" style="font:700 24px var(--display)">MU</text>
+    <text x="70" y="48" class="t2">bar 11:42 ET, forming</text>
+    <rect x="452" y="28" width="150" height="28" rx="6" fill="var(--bg)" stroke="var(--axis)"/><text x="527" y="46" text-anchor="middle">Open in Profile tab</text>
+    <rect x="612" y="28" width="92" height="28" rx="6" fill="var(--bg)" stroke="var(--axis)"/><text x="658" y="46" text-anchor="middle">Close ✕</text>
+    <g class="cl"><circle cx="48" cy="92" r="10" fill="var(--call)"/><text x="48" y="96" text-anchor="middle" style="fill:var(--surface);font:600 11px var(--mono)">1</text>
+    <path d="M48 82 V68" stroke="var(--call)" stroke-width="1.5"/>
+    <circle cx="130" cy="92" r="10" fill="var(--call)"/><text x="130" y="96" text-anchor="middle" style="fill:var(--surface);font:600 11px var(--mono)">2</text>
+    <path d="M130 82 V56" stroke="var(--call)" stroke-width="1.5"/>
+    <circle cx="527" cy="92" r="10" fill="var(--call)"/><text x="527" y="96" text-anchor="middle" style="fill:var(--surface);font:600 11px var(--mono)">3</text>
+    <path d="M527 82 V58" stroke="var(--call)" stroke-width="1.5"/>
+    <circle cx="658" cy="92" r="10" fill="var(--call)"/><text x="658" y="96" text-anchor="middle" style="fill:var(--surface);font:600 11px var(--mono)">4</text>
+    <path d="M658 82 V58" stroke="var(--call)" stroke-width="1.5"/></g>
+  </svg></div>
+  <ol class="callouts">
+    <li><span class="badge">1</span><span>The ticker.</span></li>
+    <li><span class="badge">2</span><span>The minute that is still forming. Webull refreshes it every 15 to 30 seconds, so the numbers in sections 2 and 3 jump around until the minute closes. QQQ says <i>reference only, no alerts</i> here. "No forming bar yet" means Webull hasn't sent this minute.</span></li>
+    <li><span class="badge">3</span><span>Jumps to the Profile tab with this stock picked. The button is hidden if the stock has no session profile yet.</span></li>
+    <li><span class="badge">4</span><span>Closes the panel (Esc and clicking outside it also work).</span></li>
+  </ol>
+  <div class="look"><b class="k">Before an alert</b><span>Check the time in the header. Alerts are judged only when this minute <b>closes</b>, so anything you see is a preview of what the bot will decide at :00 of the next minute.</span></div>
+</section>
+
+<!-- 2 tiles -->
+<section class="sec" id="s2">
+  <div class="sechead"><span class="num">2</span><h2>The five tiles</h2></div>
+  <p class="what">The day's context in one row. Two of these, price vs VWAP and session delta, decide which direction the bot is allowed to trade.</p>
+  <div class="fig wide"><svg viewBox="0 0 720 150" role="img" aria-label="Five tiles: Price, This bar, Session delta, Day range, Vs today's value">
+    <g id="tilegrp"></g>
+  </svg></div>
+  <ol class="callouts">
+    <li><span class="badge">1</span><span><b>Price</b>, with <b>above / below VWAP</b> and the VWAP price. VWAP here already includes the forming bar, so it matches what the closed-bar check will see.</span></li>
+    <li><span class="badge">2</span><span><b>This bar</b>: shares traded so far in the forming minute and its <b>delta</b> (shares bought at the ask minus shares sold at the bid). Green when buyers lead, red when sellers do.</span></li>
+    <li><span class="badge">3</span><span><b>Session delta</b>: the running total of every bar's delta since 9:30, and the Nasdaq volume it is based on. Nasdaq is about a quarter of all volume, so compare it to itself, not to other tools.</span></li>
+    <li><span class="badge">4</span><span><b>Day range</b>: the session's low and high so far (regular hours).</span></li>
+    <li><span class="badge">5</span><span><b>Vs today's value</b>: is price above, inside or below <i>today's</i> developing value area (the 70% of volume around today's POC), with that area printed underneath.</span></li>
+  </ol>
+  <div class="look"><b class="k">Before an alert</b><span>For a <b>long</b> you want tile 1 to say <b>above VWAP</b> and tile 3 to be <b>green</b>. For a <b>short</b>, below VWAP and red. If they disagree, absorption (trend mode) and stacked imbalances (confirmation on) will both be skipped.</span></div>
+</section>
+
+<!-- 3 setting up -->
+<section class="sec" id="s3">
+  <div class="sechead"><span class="num">3</span><h2>Setting up on the forming bar</h2></div>
+  <p class="what">How close each Plan 1 setup is to triggering on the minute that is still open. It never sends an alert or places an order. It's an early warning.</p>
+  <div class="fig wide"><svg viewBox="0 0 720 330" role="img" aria-label="Setting up card with gauges, stack count, divergence, near a level and flag list">
+    <rect x="1" y="1" width="718" height="250" rx="8" fill="var(--surface)" stroke="var(--axis)"/>
+    <text x="18" y="28" style="font:600 15px var(--display)">Setting up on the forming bar</text>
+    <g class="rows"></g>
+  </svg></div>
+  <ol class="callouts">
+    <li><span class="badge">1</span><span><b>Buying at the high</b>: of all the shares bought (at the ask) in this bar, what % were bought at the bar's single highest price. The bar fills from 0 to 50%; past 50% it stays full. The <b>black tick is the 22% line</b> (<code>absorption_pct</code>). A big share at the very top means buyers hit a wall there: the setup for an <b>absorption short</b>.</span></li>
+    <li><span class="badge">2</span><span><b>Selling at the low</b>: the same thing for sellers at the bar's lowest price, the setup for an <b>absorption long</b>. In the drawing 31% of the bar's selling sits at the low, past the line, so a flag appears.</span></li>
+    <li><span class="badge">3</span><span><b>Stacked imbalances buy / sell</b>: the longest run of price rows in a row that each have an imbalance (drawing below). <b>3 needed</b> (<code>stack_min</code>). The number turns bold once one side reaches 3.</span></li>
+    <li><span class="badge">4</span><span><b>Divergence</b>: shows "new 5-bar high, delta −800" (or low) when this bar has broken the last 5 bars' high or low, with its delta. A flag appears only if the delta points the <i>other</i> way and session delta hasn't confirmed.</span></li>
+    <li><span class="badge">5</span><span><b>Near a level</b>: any of your levels (section 7) within 3¢ of this bar's high-to-low range.</span></li>
+    <li><span class="badge">6</span><span><b>Flags</b>: a plain-English line for each setup that has reached its threshold. "(but below VWAP)" or "not at a level" at the end means it's on the wrong side and will probably be skipped at the close. With no flags it says "Nothing setting up on this bar".</span></li>
+  </ol>
+
+  <div class="cols">
+    <div class="fig"><svg viewBox="0 0 340 258" role="img" aria-label="How the selling-at-the-low percent is worked out">
+      <text x="10" y="18" class="bold">How 31% is worked out</text>
+      <g id="absfig"></g>
+    </svg></div>
+    <div class="fig"><svg viewBox="0 0 340 250" role="img" aria-label="Diagonal imbalance and a stack of three">
+      <text x="10" y="18" class="bold">What a stacked imbalance is</text>
+      <g id="imbfig"></g>
+    </svg></div>
+  </div>
+  <div class="fig wide"><svg viewBox="0 0 720 200" role="img" aria-label="Delta divergence: new 5-bar high with negative bar delta and session delta below its 5-bar peak">
+    <text x="10" y="18" class="bold">What a delta divergence is (short example)</text>
+    <g id="divfig"></g>
+  </svg></div>
+
+  <h3>From "setting up" to an alert: what the bot checks when the minute closes</h3>
+  <div class="tbl"><table class="rules">
+    <tr><th>Setup</th><th>Panel shows it forming when</th><th>Alert fires at the close only if</th><th>Order it sends</th></tr>
+    <tr><td><b>Absorption</b><br><span class="note">trend mode</span></td><td>22%+ of the bar's selling at its low (long) or buying at its high (short), and at least 200 shares at that price</td><td>Still true on the closed bar, and the bar <b>closes at least 2¢ off that extreme</b> (the level held). Long only <b>above VWAP with session delta positive</b>, short only the reverse. <b>No level needed</b>. Needs 5+ earlier bars to measure the average range.</td><td>Stop order 1¢ beyond the bar's other end (long: bar high + 1¢). Stop = 1.5× the average 1-min range of the last 20 bars. Target 1R.</td></tr>
+    <tr><td><b>Stacked imbalance</b></td><td>3+ imbalances in a row on one side</td><td>Buy stack with price <b>above VWAP</b> (sell stack below). Confirmation on: <b>bar delta</b> agrees, the bar <b>closes in its strong 40%</b> (top 40% for longs) and <b>session delta</b> agrees. The bar must <b>touch a level</b>.</td><td>At the bar's close. Stop 1¢ past the bar's low (long) or high (short). T1 = 1R, T2 = next level if within 3R.</td></tr>
+    <tr><td><b>Delta divergence</b></td><td>New 5-bar high with negative delta (or new low with positive delta) and session delta not confirming</td><td>Same on the closed bar, the bar <b>touches a level</b>, and it isn't against VWAP (a divergence short needs price below VWAP, a long above).</td><td>Stop order 1¢ beyond the bar's other end, stop 2¢ past the extreme, T1 = 1R.</td></tr>
+  </table></div>
+  <p class="note">All setups are also skipped if the bar is more than 2× the average 1-minute range, outside 09:31–15:45, when the plan already has 2 open, or after a daily stop. Paper orders only go in for alerts 09:31–11:00.</p>
+  <div class="look"><b class="k">Before an alert</b><span>A gauge past the black line, or the stack count reaching 3, <b>with no "but" at the end of the flag</b>, and tiles 1 and 3 on the same side. Then watch the last seconds of the minute: for absorption the close has to pull at least 2¢ away from the extreme; for stacks the close has to be in the strong end of the bar.</span></div>
+</section>
+
+<!-- 4 candles -->
+<section class="sec" id="s4">
+  <div class="sechead"><span class="num">4</span><h2>Today, 1-min candles with your levels</h2></div>
+  <p class="what">The whole day so far, premarket included, with every level the bot uses drawn across it.</p>
+  <div class="fig wide"><svg viewBox="0 0 720 380" role="img" aria-label="Candle chart with premarket, 9:30 line, dashed levels, dotted VWAP, alert marker, forming candle and last price tag">
+    <g id="candfig"></g>
+  </svg></div>
+  <ol class="callouts">
+    <li><span class="badge">1</span><span><b>Premarket</b> candles (4:00–9:30) are drawn faint. They are never alerted, but their high and low become the <b>PM high</b> and <b>PM low</b> levels.</span></li>
+    <li><span class="badge">2</span><span>The dashed vertical line marks the <b>9:30 open</b>.</span></li>
+    <li><span class="badge">3</span><span><b>Blue dashed lines</b> are your levels, labelled on the right with name and price: prior-day POC / VAH / VAL (<code>pPOC</code>, <code>pVAH</code>, <code>pVAL</code>), PM high / low, block prints (e.g. <code>Block 25k @ 10:14</code>) and manual levels. Labels are nudged apart so they don't overlap.</span></li>
+    <li><span class="badge">4</span><span>The <b>dotted line is VWAP</b>, the line in tile 1.</span></li>
+    <li><span class="badge">5</span><span><b>▲ / ▼</b> mark today's alerts on this stock, at the entry price. Hover one for setup, side and result.</span></li>
+    <li><span class="badge">6</span><span>The <b>faded last candle</b> is the minute still forming; the dark tag on the right is the last price.</span></li>
+    <li><span class="badge">7</span><span>The subtitle says the time span and how many levels are <b>in view</b>. Levels too far from today's range are left off the chart and listed in the note underneath ("Off the chart: …"). Your screenshot showed 102 because the LVLS zones were still in; with those removed (Nov 15) you'll see a handful.</span></li>
+  </ol>
+  <div class="look"><b class="k">Before an alert</b><span>Is the forming candle <b>touching a dashed line</b> (within 3¢)? Stacked and divergence alerts need that. Is it on the right side of the dotted VWAP for the direction? Absorption in trend mode ignores levels but still needs the VWAP side.</span></div>
+</section>
+
+<!-- 5 footprint -->
+<section class="sec" id="s5">
+  <div class="sechead"><span class="num">5</span><h2>Footprint, latest bars</h2></div>
+  <p class="what">The last 10 one-minute bars, opened up: how many shares sold at the bid (left) and bought at the ask (right) at every price. It scrolls sideways and starts at the newest bar. It only appears with <code>footprint_chart = true</code>.</p>
+  <div class="fig wide"><svg viewBox="0 0 720 420" role="img" aria-label="Footprint chart with bid by ask cells, imbalance outlines, POC marker, forming bar and delta">
+    <g id="fpfig"></g>
+  </svg></div>
+  <ol class="callouts">
+    <li><span class="badge">1</span><span>Each cell is <b>sold × bought</b> at that price: left number = sellers hitting the bid, right = buyers lifting the ask. Volume is Nasdaq-only.</span></li>
+    <li><span class="badge">2</span><span>Cell colour: <b style="color:var(--buy)">blue</b> when more was bought than sold at that price, <b style="color:var(--sell)">orange</b> when more was sold. Darker means more shares and a more one-sided split.</span></li>
+    <li><span class="badge">3</span><span><b>Outlined right half, bold number</b> = a <b>buy imbalance</b>: bought at this price ≥ 3× sold one row lower, and at least 200 shares. Three on top of each other (here 812.06–812.08) are a <b>stack of 3</b>. An outlined left half is a <b>sell imbalance</b> (sold ≥ 3× bought one row higher).</span></li>
+    <li><span class="badge">4</span><span><b>▸</b> marks the bar's own POC, the price with the most shares.</span></li>
+    <li><span class="badge">5</span><span>The thin candle at the left of each column shows open, high, low, close (blue up, orange down).</span></li>
+    <li><span class="badge">6</span><span>Under each bar: total <b>Vol</b> and <b>Δ delta</b> (green positive, red negative).</span></li>
+    <li><span class="badge">7</span><span>The <b>dashed box</b> is the bar still forming.</span></li>
+  </ol>
+  <p class="note">The note under the chart says how much price each row is. When a stock moves fast the chart groups several cents into one row so it fits. Then the outlines are worked out on the grouped rows, while the bot itself always uses single cents, so trust section 3's count over the outlines.</p>
+  <div class="look"><b class="k">Before an alert</b><span><b>Stack long:</b> three or more bold outlined right-half cells in a row, a positive Δ, and the candle closing near the top of the bar. <b>Absorption long:</b> a heavy left number on the bar's bottom row (lots sold at the low) with the candle closing at least 2¢ above it. Mirror both for shorts.</span></div>
+</section>
+
+<!-- 6 profile -->
+<section class="sec" id="s6">
+  <div class="sechead"><span class="num">6</span><h2>Session profile</h2></div>
+  <p class="what">Today's market profile (the Profile tab, summarised). Plan 1 doesn't use it to fire, but it is what Plan 2's four setups trade off, and it is where tomorrow's pPOC / pVAH / pVAL come from.</p>
+  <div class="cols">
+    <div class="fig"><svg viewBox="0 0 350 330" role="img" aria-label="Volume profile with POC, value area, opening range, initial balance, single prints and a tail">
+      <g id="proffig"></g>
+    </svg></div>
+    <div class="tbl" style="min-width:0"><table class="rules" style="min-width:0">
+      <tr><th>Row</th><th>Example</th></tr>
+      <tr><td><span class="badge" style="display:inline-block">1</span> POC</td><td class="m">806.40</td></tr>
+      <tr><td><span class="badge" style="display:inline-block">2</span> Value area</td><td class="m">803.20 – 810.90</td></tr>
+      <tr><td><span class="badge" style="display:inline-block">3</span> Opening range (30 min)</td><td class="m">799.00 – 805.10</td></tr>
+      <tr><td><span class="badge" style="display:inline-block">4</span> Initial balance (first hour)</td><td class="m">798.10 – 807.80</td></tr>
+      <tr><td><span class="badge" style="display:inline-block">5</span> Opened vs prior value</td><td>Inside value</td></tr>
+      <tr><td><span class="badge" style="display:inline-block">6</span> Prior POC / value area (letters)</td><td class="m">804.30 · 797.80 – 811.95</td></tr>
+      <tr><td><span class="badge" style="display:inline-block">7</span> Single prints</td><td class="m">808.90 – 810.10</td></tr>
+      <tr><td><span class="badge" style="display:inline-block">8</span> Buying tail</td><td class="m">798.10 – 798.90</td></tr>
+      <tr><td>Poor high / Poor low</td><td>only shown when present</td></tr>
+    </table></div>
+  </div>
+  <ol class="callouts">
+    <li><span class="badge">1</span><span><b>POC</b>: today's price with the most trading.</span></li>
+    <li><span class="badge">2</span><span><b>Value area</b>: the 70% of today's volume around the POC. Tile 5 tells you if price is above, inside or below it.</span></li>
+    <li><span class="badge">3</span><span><b>Opening range</b>: high and low of the first 30 minutes (Plan 2's opening range breakout).</span></li>
+    <li><span class="badge">4</span><span><b>Initial balance</b>: high and low of the first hour, set at 10:30.</span></li>
+    <li><span class="badge">5</span><span><b>Opened vs prior value</b>: where today's open sat against yesterday's value area. Opening inside and then moving through value is the 80% rule's setup.</span></li>
+    <li><span class="badge">6</span><span><b>Prior POC / value area (letters)</b>: yesterday's numbers from the 30-minute letter profile. They can differ by a few cents from the pPOC / pVAH / pVAL levels, which come from yesterday's volume.</span></li>
+    <li><span class="badge">7</span><span><b>Single prints</b>: a zone traded in only one 30-minute period, a fast move that often gets revisited.</span></li>
+    <li><span class="badge">8</span><span><b>Buying tail / Selling tail</b>: single prints at the very bottom or top of the day, a sign the extreme was rejected. A <b>poor high or low</b> (two or more periods flat at the extreme, no tail) is unfinished business.</span></li>
+  </ol>
+  <div class="look"><b class="k">Before an alert</b><span>For <b>Plan 2</b> alerts, look at where price is against the value area edges, the opening range and any single prints. Plan 2 stops for the day after 3 half-hour closes across the developing POC (choppy day).</span></div>
+</section>
+
+<!-- 7 levels -->
+<section class="sec" id="s7">
+  <div class="sechead"><span class="num">7</span><h2>Levels the bot alerts at</h2></div>
+  <p class="what">The full list behind the dashed lines in section 4, highest price first, with how far each one is from the current price.</p>
+  <div class="cols">
+    <div class="fig"><svg viewBox="0 0 340 300" role="img" aria-label="Price ladder with levels above and below the current price and the 3 cent touch zone">
+      <g id="ladfig"></g>
+    </svg></div>
+    <div class="tbl" style="min-width:0"><table class="rules" style="min-width:0">
+      <tr><th>Level</th><th style="text-align:right">Price</th><th style="text-align:right">Distance</th></tr>
+      <tr><td>pVAH</td><td class="m" style="text-align:right">811.95</td><td class="m" style="text-align:right;color:var(--down)">−0.45</td></tr>
+      <tr><td>pPOC</td><td class="m" style="text-align:right">804.30</td><td class="m" style="text-align:right;color:var(--down)">−8.10</td></tr>
+      <tr><td>PM high</td><td class="m" style="text-align:right">803.17</td><td class="m" style="text-align:right;color:var(--down)">−9.23</td></tr>
+      <tr><td>Block 25k @ 10:14</td><td class="m" style="text-align:right">801.87</td><td class="m" style="text-align:right;color:var(--down)">−10.53</td></tr>
+      <tr><td>PM low</td><td class="m" style="text-align:right">799.79</td><td class="m" style="text-align:right;color:var(--down)">−12.61</td></tr>
+      <tr><td>pVAL</td><td class="m" style="text-align:right">797.80</td><td class="m" style="text-align:right;color:var(--down)">−14.60</td></tr>
+      </table></div>
+  </div>
+  <ol class="callouts">
+    <li><span class="badge">1</span><span><b>Prior-day volume levels</b>: pPOC, pVAH, pVAL. They appear once a prior session has been recorded.</span></li>
+    <li><span class="badge">2</span><span><b>PM high / PM low</b>: from this morning's premarket.</span></li>
+    <li><span class="badge">3</span><span><b>Block prints</b>: a single trade of 20,000+ shares or $2M+ becomes a level for the rest of the day, named by size and time.</span></li>
+    <li><span class="badge">4</span><span><b>Manual levels</b> you set in config appear by the name you gave them.</span></li>
+    <li><span class="badge">5</span><span><b>Distance</b>: level minus price. <span style="color:var(--up)">Green</span> = above you, <span style="color:var(--down)">red</span> = below. A bar "touches" a level when the level is within <b>3¢</b> of anywhere between the bar's high and low.</span></li>
+  </ol>
+  <div class="look"><b class="k">Before an alert</b><span>Here only pVAH (−0.45) is close. A distance of a few cents means the next bar can touch it. Stacked and divergence alerts need that touch ("Only at prior-day levels" is on). The next level beyond 1R in your direction also becomes <b>T2</b> for stacked trades if it's within 3R.</span></div>
+</section>
+
+<!-- 8 alerts -->
+<section class="sec" id="s8">
+  <div class="sechead"><span class="num">8</span><h2>Today's alerts</h2></div>
+  <p class="what">Every alert on this stock today, in the order they fired.</p>
+  <div class="fig wide"><svg viewBox="0 0 720 150" role="img" aria-label="Today's alerts table with time, setup, side, entry, stop, target, result and R">
+    <g id="alfig"></g>
+  </svg></div>
+  <ol class="callouts">
+    <li><span class="badge">1</span><span><b>Time</b> of the signal bar (ET), <b>setup</b> and <b>side</b>.</span></li>
+    <li><span class="badge">2</span><span><b>Entry, stop and target</b> (T1) prices the alert gave.</span></li>
+    <li><span class="badge">3</span><span><b>Result</b> (open, pending, T1 then BE, stopped, expired and so on) and <b>R</b>: how many risk units it made or lost. +1R = made what was risked.</span></li>
+    <li><span class="badge">4</span><span><b>Click a row</b> to open the alert detail panel: a chart around the alert with entry, stop and targets drawn, the delta of each minute, and a "Why it fired" table with what the bot saw and which levels it touched.</span></li>
+  </ol>
+  <div class="look"><b class="k">Before an alert</b><span>Count the rows still <b>open</b> or <b>pending</b> across the plan (not only this stock). Plan 1 allows <b>2 open at once</b>; a third alert is blocked, and the Dashboard shows why.</span></div>
+</section>
+
+<!-- 9 notes -->
+<section class="sec" id="s9">
+  <div class="sechead"><span class="num">9</span><h2>Notes</h2></div>
+  <p class="what">A free-text box for your own plan on this stock: key levels, news, earnings date, what you're waiting for.</p>
+  <div class="fig"><svg viewBox="0 0 720 120" role="img" aria-label="Notes box with saved message">
+    <rect x="1" y="1" width="718" height="118" rx="8" fill="var(--surface)" stroke="var(--axis)"/>
+    <text x="18" y="26" style="font:600 15px var(--display)">Notes</text><text x="660" y="26" class="up" text-anchor="end">Saved</text>
+    <rect x="18" y="38" width="684" height="52" rx="6" fill="var(--bg)" stroke="var(--grid)"/>
+    <text x="30" y="60" class="t2">Earnings Wed after close. Only longs above 812 today. Block at 801.87 is support.</text>
+    <text x="18" y="108" class="mut" style="font-size:11px">Saved as you type, in this browser only. Each stock keeps its own notes.</text>
+  </svg></div>
+  <ol class="callouts">
+    <li><span class="badge">1</span><span>Saves as you type (you'll see "Saved"). Stored in <b>this browser only</b>: notes typed on your PC won't show on your phone, and clearing the browser's site data erases them.</span></li>
+    <li><span class="badge">2</span><span>The bot never reads them. They don't change any alert.</span></li>
+  </ol>
+  <div class="look"><b class="k">Before an alert</b><span>Write down the condition you want to see ("only longs above pVAH") so you can check it against the flag when it appears.</span></div>
+</section>
+
+<p class="note">Source: the bot's dashboard code (ticker panel), watch.py (forming-bar checks), signals.py (closed-bar rules) and config.toml as of Nov 16, 2026. Nothing in the bot was changed for this page.</p>
+</main>
+</div>
+
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const el=(tag,attrs,txt)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;return e};
+const add=(g,tag,attrs,txt)=>g.appendChild(el(tag,attrs,txt));
+const badge=(g,x,y,n,tx,ty)=>{if(tx!=null)add(g,"path",{d:`M${x} ${y} L${tx} ${ty}`,stroke:"var(--call)","stroke-width":1.5,fill:"none"});
+  add(g,"circle",{cx:x,cy:y,r:10,fill:"var(--call)"});add(g,"text",{x:x,y:y+4,"text-anchor":"middle",style:"fill:var(--surface);font:600 11px var(--mono)"},n)};
+const k=v=>Math.abs(v)>=1e6?(v/1e6).toFixed(1)+"M":Math.abs(v)>=1000?(v/1000).toFixed(1)+"k":String(v);
+
+/* ---- 2 tiles ---- */
+{const g=document.getElementById("tilegrp");
+ const T=[["Price","812.40","above VWAP 809.85",""],["This bar","4.2k","delta +1.1k","up"],["Session delta","+38.0k","on 1.2M sh (Nasdaq)","up"],["Day range","798.10 – 815.60","",""],["Vs today's value","Above","VA 803.20 – 810.90",""]];
+ T.forEach((t,i)=>{const x=1+i*144;add(g,"rect",{x:x,y:1,width:136,height:96,rx:8,fill:"var(--surface)",stroke:"var(--axis)"});
+  add(g,"text",{x:x+12,y:24,class:"mut",style:"font-size:11px"},t[0]);
+  add(g,"text",{x:x+12,y:52,class:t[3]+" bold",style:`font:600 ${t[1].length>10?15:20}px var(--display)`},t[1]);
+  add(g,"text",{x:x+12,y:76,class:"t2",style:"font-size:11px"},t[2]);
+  badge(g,x+68,128,i+1,x+68,98)});}
+
+/* ---- 3 setting up card ---- */
+{const svg=document.querySelector("#s3 .fig svg"),g=svg.querySelector(".rows");
+ const gauge=(y,v)=>{const x=250,w=200;add(g,"rect",{x,y:y-9,width:w,height:10,rx:3,fill:"var(--grid)"});
+  add(g,"rect",{x,y:y-9,width:Math.min(1,v/0.5)*w,height:10,rx:3,fill:"var(--series)"});
+  add(g,"rect",{x:x+0.22/0.5*w-1,y:y-12,width:2,height:16,fill:"var(--ink)"});
+  add(g,"text",{x:x+w+10,y:y,class:"mono"},Math.round(v*100)+"%")};
+ const rows=[["Buying at the high 815.60",null,0.09],["Selling at the low 811.90",null,0.31],["Stacked imbalances buy / sell","1 / 0  (3 needed)"],["Divergence","–"],["Near a level","pVAH 811.95"]];
+ rows.forEach((r,i)=>{const y=60+i*30;add(g,"line",{x1:18,x2:700,y1:y+10,y2:y+10,stroke:"var(--grid)"});
+  add(g,"text",{x:18,y:y,class:"t2"},r[0]);if(r[1]==null)gauge(y,r[2]);else add(g,"text",{x:250,y:y,class:"mono"},r[1]);
+  badge(g,560,y-4,i+1,505,y-4)});
+ add(g,"text",{x:250+0.22/0.5*200,y:44,"text-anchor":"middle",class:"mut",style:"font-size:10px"},"22% line");
+ add(g,"rect",{x:18,y:212,width:600,height:26,rx:6,fill:"var(--bg)",stroke:"var(--grid)"});
+ add(g,"text",{x:30,y:229},"• Absorption long forming: 1,240 sold at the low 811.90, at pVAH 811.95");
+ badge(g,660,225,6,620,225);
+ add(g,"text",{x:18,y:278,class:"mut",style:"font-size:11px"},"Gauge scale: empty = 0%, full = 50% or more. The black tick is your absorption_pct (22%).");
+ add(g,"text",{x:18,y:298,class:"mut",style:"font-size:11px"},"Absorption also needs 200+ shares at that one price, so a thin bar can pass the % and still not flag.");}
+
+/* absorption % mini */
+{const g=document.getElementById("absfig");const R=[[812.00,380,410],[811.99,520,600],[811.98,610,450],[811.97,420,380],[811.96,330,260],[811.95,310,190],[811.94,190,120],[811.90,1240,90]];
+ R[6]=[811.93,190,120];R.splice(7,0,[811.92,0,0]);R.splice(7,1);
+ const rows=[[812.00,380,410],[811.99,520,600],[811.98,610,450],[811.97,420,380],[811.96,330,260],[811.95,310,190],[811.94,190,120],[811.93,0,0],[811.92,0,0],[811.91,0,0],[811.90,1240,90]];
+ // compress: show 812.00..811.94 then gap then 811.90
+ const show=[0,1,2,3,4,5,6,10];
+ show.forEach((ri,j)=>{const r=rows[ri],y=36+j*22+(ri===10?14:0);
+  add(g,"text",{x:58,y:y+14,"text-anchor":"end",class:"mut mono",style:"font-size:11px"},r[0].toFixed(2));
+  add(g,"rect",{x:66,y:y,width:130,height:18,rx:3,fill:ri===10?"var(--sell)":"var(--grid)",opacity:ri===10?0.35:0.6});
+  add(g,"text",{x:124,y:y+13,"text-anchor":"end",class:"mono",style:`font-size:11px;font-weight:${ri===10?700:400}`},k(r[1]));
+  add(g,"text",{x:131,y:y+13,"text-anchor":"middle",class:"mut"},"×");
+  add(g,"text",{x:138,y:y+13,class:"mono",style:"font-size:11px"},k(r[2]))});
+ add(g,"text",{x:130,y:194,"text-anchor":"middle",class:"mut"},"⋮");
+ add(g,"text",{x:206,y:60,class:"t2",style:"font-size:11px"},"Sold in the whole bar");
+ add(g,"text",{x:206,y:76,class:"mono bold"},"4,000 sh");
+ add(g,"text",{x:206,y:204,class:"t2",style:"font-size:11px"},"Sold at the low");
+ add(g,"text",{x:206,y:220,class:"mono bold"},"1,240 sh = 31%");
+ add(g,"text",{x:10,y:236,class:"mut",style:"font-size:11px"},"31% ≥ 22% and 1,240 ≥ 200 → flag.");add(g,"text",{x:10,y:250,class:"mut",style:"font-size:11px"},"At the close it must sit 2¢+ off the low.");}
+
+/* imbalance mini */
+{const g=document.getElementById("imbfig");const rows=[[812.09,90,260],[812.08,140,420],[812.07,120,520],[812.06,160,610],[812.05,190,450],[812.04,300,380]];
+ rows.forEach((r,j)=>{const y=34+j*26,imb=j<4&&j>0;
+  add(g,"text",{x:58,y:y+15,"text-anchor":"end",class:"mut mono",style:"font-size:11px"},r[0].toFixed(2));
+  add(g,"rect",{x:66,y:y,width:130,height:20,rx:3,fill:"var(--buy)",opacity:0.22});
+  if(imb)add(g,"rect",{x:131,y:y,width:65,height:20,rx:3,fill:"none",stroke:"var(--buy)","stroke-width":2});
+  add(g,"text",{x:124,y:y+14,"text-anchor":"end",class:"mono",style:"font-size:11px"},r[1]);
+  add(g,"text",{x:131,y:y+14,"text-anchor":"middle",class:"mut"},"×");
+  add(g,"text",{x:140,y:y+14,class:"mono",style:`font-size:11px;font-weight:${imb?700:400}`},r[2])});
+ // diagonal arrow for 812.07 buy vs 812.06 sell
+ add(g,"path",{d:"M150 92 L110 112",stroke:"var(--call)","stroke-width":1.5,fill:"none","marker-end":""});
+ add(g,"circle",{cx:110,cy:112,r:3,fill:"var(--call)"});
+ add(g,"text",{x:206,y:62,class:"cl",style:"font-size:11px"},"Buy imbalance at P:");
+ add(g,"text",{x:206,y:78,style:"font-size:11px"},"bought at P ≥ 3× sold");
+ add(g,"text",{x:206,y:93,style:"font-size:11px"},"one cent lower, and");
+ add(g,"text",{x:206,y:108,style:"font-size:11px"},"bought ≥ 200 sh");
+ add(g,"text",{x:206,y:132,class:"t2",style:"font-size:11px"},"520 vs 160 → 3.25× ✓");
+ add(g,"path",{d:"M200 60 Q 215 50 208 40",stroke:"none",fill:"none"});
+ add(g,"text",{x:10,y:208,class:"bold",style:"font-size:12px"},"812.06, .07, .08 in a row = stack of 3");
+ add(g,"text",{x:10,y:226,class:"mut",style:"font-size:11px"},"812.09 fails: 260 < 3 × 140. 812.05 fails: 450 < 3 × 300.");
+ add(g,"text",{x:10,y:242,class:"mut",style:"font-size:11px"},"Sell side is the mirror: sold at P ≥ 3× bought one cent higher.");}
+
+/* divergence */
+{const g=document.getElementById("divfig");const C=[[100,103,99,102],[102,106,101,105],[105,108,104,107],[107,110,105,106],[106,109,104,108],[108,108.6,105.5,106.2],[106,112,105,107]];
+ const D=[900,1400,1100,-300,600,-200,-800],CD=[900,2300,3400,3100,3700,3500,2700];
+ const y=p=>150-(p-98)*8,x=i=>40+i*42;
+ C.forEach((c,i)=>{const [o,h,l,cl]=c,up=cl>=o,col=up?"var(--buy)":"var(--sell)";
+  add(g,"line",{x1:x(i),x2:x(i),y1:y(h),y2:y(l),stroke:col});add(g,"rect",{x:x(i)-7,y:y(Math.max(o,cl)),width:14,height:Math.max(1,Math.abs(y(o)-y(cl))),fill:col});
+  add(g,"text",{x:x(i),y:178,"text-anchor":"middle",class:"mono "+(D[i]>=0?"up":"dn"),style:"font-size:10px"},(D[i]>=0?"+":"−")+Math.abs(D[i]))});
+ add(g,"rect",{x:x(1)-14,y:26,width:x(5)-x(1)+28,height:134,fill:"var(--series)",opacity:0.06});
+ add(g,"text",{x:(x(1)+x(5))/2,y:38,"text-anchor":"middle",class:"mut",style:"font-size:10px"},"last 5 bars");
+ add(g,"line",{x1:x(1)-14,x2:x(6)+14,y1:y(110),y2:y(110),stroke:"var(--muted)","stroke-dasharray":"3 3"});
+ add(g,"text",{x:x(6)+18,y:y(110)+4,class:"mut",style:"font-size:10px"},"5-bar high 110");
+ add(g,"text",{x:6,y:192,class:"mut",style:"font-size:10px"},"bar Δ");
+ // cum delta mini on right
+ const X=i=>420+i*36,Y=v=>150-v/4000*110;
+ add(g,"text",{x:420,y:38,class:"t2",style:"font-size:11px"},"Session delta");
+ add(g,"polyline",{points:CD.map((v,i)=>`${X(i)},${Y(v)}`).join(" "),fill:"none",stroke:"var(--ink2)","stroke-width":2});
+ CD.forEach((v,i)=>add(g,"circle",{cx:X(i),cy:Y(v),r:i===6?4:2.5,fill:i===6?"var(--down)":"var(--ink2)"}));
+ add(g,"line",{x1:X(1),x2:X(6)+10,y1:Y(3700),y2:Y(3700),stroke:"var(--muted)","stroke-dasharray":"3 3"});
+ add(g,"text",{x:X(6)+14,y:Y(3700)+4,class:"mut",style:"font-size:10px"},"5-bar peak");
+ badge(g,x(6)+30,y(112)-4,1,x(6)+8,y(112));
+ badge(g,x(6)+30,170,2,x(6)+16,176);
+ badge(g,X(6)+24,Y(2700)+20,3,X(6)+4,Y(2700)+4);
+ add(g,"text",{x:420,y:196,class:"t2",style:"font-size:11px"},"① new 5-bar high ② bar delta negative ③ session delta under its peak");}
+
+/* ---- 4 candles ---- */
+{const g=document.getElementById("candfig");let s=7;const rnd=()=>{s=(s*16807)%2147483647;return (s-1)/2147483646};
+ const K=[];let p=801.5;
+ for(let i=0;i<22;i++){const o=p,c=o+(rnd()-0.48)*1.4,h=Math.max(o,c)+rnd()*0.6,l=Math.min(o,c)-rnd()*0.6;K.push({o,h,l,c,pm:1,v:0});p=c}
+ const PMH=Math.max(...K.map(k=>k.h)),PML=Math.min(...K.map(k=>k.l));
+ p=800.4;for(let i=0;i<68;i++){const drift=i<12?-0.15:0.22;const o=p,c=o+drift+(rnd()-0.5)*1.9,h=Math.max(o,c)+rnd()*0.8,l=Math.min(o,c)-rnd()*0.8;K.push({o,h,l,c,pm:0,v:300+rnd()*700});p=c}
+ {const S=K.filter(k=>!k.pm),a=S[0].o,f=(812.40-a)/(S[S.length-1].c-a);S.forEach(k=>{["o","h","l","c"].forEach(q=>k[q]=a+(k[q]-a)*f)})}
+ const last=K[K.length-1];last.forming=1;window.__dbg=[PMH,PML,K[50].c];
+ let pv=0,vv=0;K.forEach(k=>{if(k.pm)return;const t=(k.h+k.l+k.c)/3;pv+=t*k.v;vv+=k.v;k.vw=pv/vv});
+ const lo=Math.min(...K.map(k=>k.l),797.8)-0.6,hi=Math.max(...K.map(k=>k.h),PMH)+0.6;
+ const L=8,R=560,T=12,B=340,cw=(R-L)/K.length,Y=v=>T+(hi-v)/(hi-lo)*(B-T),X=i=>L+i*cw+cw/2;
+ for(let v=Math.ceil(lo/2)*2;v<=hi;v+=2){add(g,"line",{x1:L,x2:R,y1:Y(v),y2:Y(v),stroke:"var(--grid)"});add(g,"text",{x:R+4,y:Y(v)+4,class:"mut",style:"font-size:10px"},v)}
+ const blk=K[50].c;
+ const lev=[["PM high",PMH],["pVAH",811.95],["Block 25k @ 10:14",blk],["pPOC",804.3],["PM low",PML],["pVAL",797.8]].sort((a,b)=>b[1]-a[1]);
+ const labs=[];lev.forEach(([n,v])=>{add(g,"line",{x1:L,x2:R,y1:Y(v),y2:Y(v),stroke:"var(--series)","stroke-width":1.5,"stroke-dasharray":"5 4"});labs.push({y:Y(v),t:`${n} ${v.toFixed(2)}`})});
+ // VWAP
+ add(g,"polyline",{points:K.map((k,i)=>k.vw?`${X(i)},${Y(k.vw)}`:"").filter(Boolean).join(" "),fill:"none",stroke:"var(--ink2)","stroke-width":1.5,"stroke-dasharray":"2 3"});
+ const bw=Math.max(1,cw*0.7);
+ K.forEach((k,i)=>{const col=k.c>=k.o?"var(--buy)":"var(--sell)",op=k.pm?0.4:k.forming?0.55:1;
+  add(g,"line",{x1:X(i),x2:X(i),y1:Y(k.h),y2:Y(k.l),stroke:col,opacity:op});
+  add(g,"rect",{x:X(i)-bw/2,y:Y(Math.max(k.o,k.c)),width:bw,height:Math.max(1,Math.abs(Y(k.o)-Y(k.c))),fill:col,opacity:op})});
+ const i0=22,x0=L+i0*cw;add(g,"line",{x1:x0,x2:x0,y1:T,y2:B,stroke:"var(--muted)","stroke-dasharray":"3 3"});add(g,"text",{x:x0+3,y:T+10,class:"mut",style:"font-size:10px"},"9:30 open");
+ // alert marker
+ const ai=58,ak=K[ai];add(g,"path",{d:`M${X(ai)-6},${Y(ak.c)+12} h12 l-6,-9 z`,fill:"var(--ink)"});
+ // last price tag
+ const lp=last.c;add(g,"line",{x1:L,x2:R,y1:Y(lp),y2:Y(lp),stroke:"var(--ink)",opacity:0.35});
+ add(g,"rect",{x:R+2,y:Y(lp)-8,width:52,height:16,rx:3,fill:"var(--ink)"});add(g,"text",{x:R+28,y:Y(lp)+4,"text-anchor":"middle",style:"font-size:10px;fill:var(--surface);font-weight:600"},lp.toFixed(2));
+ labs.sort((a,b)=>a.y-b.y);let ly=-99;labs.forEach(l=>{l.y=Math.max(l.y,ly+13);ly=l.y;
+  add(g,"rect",{x:R+60,y:l.y-4,width:8,height:8,rx:2,fill:"var(--series)"});add(g,"text",{x:R+72,y:l.y+4,class:"t2",style:"font-size:10px"},l.t)});
+ ["09:10","09:30","10:00","10:30","11:00","11:30"].forEach((t,j)=>{const idx=[2,22,34,46,58,70][j];if(idx<K.length)add(g,"text",{x:X(idx),y:B+16,"text-anchor":"middle",class:"mut",style:"font-size:10px"},t)});
+ // callouts
+ badge(g,X(6),Y(PMH)-26,1,X(6),Y(K[6].h)-4);
+ badge(g,x0+14,T+30,2,x0+2,T+24);
+ badge(g,X(30),Y(804.3)-18,3,X(30),Y(804.3)-2);
+ const vi=40;badge(g,X(vi),Y(K[vi].vw)+30,4,X(vi),Y(K[vi].vw)+3);
+ badge(g,X(ai)-24,Y(ak.c)+30,5,X(ai)-4,Y(ak.c)+12);
+ badge(g,X(K.length-1)-6,Y(last.h)-26,6,X(K.length-1),Y(last.h)-4);
+ add(g,"text",{x:L,y:372,class:"mut",style:"font-size:11px"},"Subtitle: 09:10 – 11:42 ET · 6 levels in view");badge(g,282,368,7);}
+
+/* ---- 5 footprint ---- */
+{const g=document.getElementById("fpfig");
+ const bars=[{t:"11:39",o:812.01,c:812.05,rows:[[812.06,120,210],[812.05,340,380],[812.04,520,610],[812.03,700,560],[812.02,480,390],[812.01,260,180],[812.00,150,90]]},
+  {t:"11:40",o:812.04,c:812.08,rows:[[812.09,90,260],[812.08,140,420],[812.07,120,520],[812.06,160,610],[812.05,190,450],[812.04,300,380],[812.03,260,210],[812.02,180,120]]},
+  {t:"11:41",o:812.08,c:812.05,rows:[[812.09,110,140],[812.08,380,220],[812.07,700,300],[812.06,420,260],[812.05,300,210],[812.04,160,120]]},
+  {t:"11:42",o:812.05,c:812.07,forming:1,rows:[[812.08,60,110],[812.07,150,190],[812.06,210,170],[812.05,90,60]]}];
+ const HI=812.09,LO=812.00,RH=26,CW=150,PX=70,TOP=40,rows=Math.round((HI-LO)/0.01)+1,yOf=p=>TOP+Math.round((HI-p)/0.01)*RH;
+ let maxv=1;bars.forEach(b=>b.rows.forEach(r=>maxv=Math.max(maxv,r[1]+r[2])));
+ for(let r=0;r<rows;r++){const p=HI-r*0.01,y=TOP+r*RH;add(g,"line",{x1:PX,x2:PX+bars.length*CW,y1:y,y2:y,stroke:"var(--grid)","stroke-width":0.5});
+  add(g,"text",{x:PX-8,y:y+17,"text-anchor":"end",class:"mut mono",style:"font-size:11px"},p.toFixed(2))}
+ bars.forEach((b,i)=>{const x0=PX+i*CW,asc=[...b.rows].sort((a,c)=>a[0]-c[0]);
+  const S=Object.fromEntries(asc.map(r=>[r[0].toFixed(2),r[1]])),Bv=Object.fromEntries(asc.map(r=>[r[0].toFixed(2),r[2]]));
+  let poc=asc.reduce((m,r)=>r[1]+r[2]>m[1]+m[2]?r:m)[0];
+  if(b.forming)add(g,"rect",{x:x0+2,y:TOP-32,width:CW-4,height:rows*RH+32+48,rx:6,fill:"none",stroke:"var(--axis)","stroke-dasharray":"4 3"});
+  add(g,"text",{x:x0+CW/2,y:TOP-12,"text-anchor":"middle",class:"t2",style:"font-weight:500"},b.t+(b.forming?" · forming":""));
+  const hiP=Math.max(...asc.map(r=>r[0])),loP=Math.min(...asc.map(r=>r[0]));
+  add(g,"line",{x1:x0+8,x2:x0+8,y1:yOf(hiP)+3,y2:yOf(loP)+RH-3,stroke:"var(--axis)","stroke-width":2});
+  const yt=Math.min(yOf(b.o),yOf(b.c)),yb=Math.max(yOf(b.o),yOf(b.c))+RH;add(g,"rect",{x:x0+5,y:yt+1,width:6,height:yb-yt-2,rx:2,fill:b.c>=b.o?"var(--buy)":"var(--sell)"});
+  let vol=0,dl=0;
+  asc.forEach((r,j)=>{const [p,sv,bv]=r,key=v=>v.toFixed(2),y=yOf(p),tot=sv+bv,share=tot?(bv-sv)/tot:0,alpha=(0.12+0.5*Math.sqrt(tot/maxv))*Math.min(1,Math.abs(share)*1.6+0.15);vol+=tot;dl+=bv-sv;
+   const below=S[key(p-0.01)]||0,above=Bv[key(p+0.01)]||0,bi=j>0&&bv>=200&&bv>=3*below,si=j<asc.length-1&&sv>=200&&sv>=3*above;
+   const cx=x0+18,cwid=CW-26;
+   add(g,"rect",{x:cx,y:y+2,width:cwid,height:RH-4,rx:3,fill:share>=0?"var(--buy)":"var(--sell)",opacity:alpha.toFixed(3)});
+   if(bi)add(g,"rect",{x:cx+cwid/2,y:y+2,width:cwid/2,height:RH-4,rx:3,fill:"none",stroke:"var(--buy)","stroke-width":1.8});
+   if(si)add(g,"rect",{x:cx,y:y+2,width:cwid/2,height:RH-4,rx:3,fill:"none",stroke:"var(--sell)","stroke-width":1.8});
+   const mid=cx+cwid/2;add(g,"text",{x:mid-7,y:y+17,"text-anchor":"end",class:"mono",style:`font-size:11px;font-weight:${si?700:400}`},sv);
+   add(g,"text",{x:mid,y:y+17,"text-anchor":"middle",class:"mut"},"×");
+   add(g,"text",{x:mid+7,y:y+17,class:"mono",style:`font-size:11px;font-weight:${bi?700:400}`},bv);
+   if(p===poc)add(g,"text",{x:x0+CW-6,y:y+17,"text-anchor":"end",class:"t2"},"▸")});
+  const yb2=TOP+rows*RH;add(g,"text",{x:x0+CW/2,y:yb2+18,"text-anchor":"middle",class:"t2"},"Vol "+k(vol));
+  add(g,"text",{x:x0+CW/2,y:yb2+36,"text-anchor":"middle",class:dl>=0?"up bold":"dn bold"},"Δ "+(dl>=0?"+":"−")+k(Math.abs(dl)))});
+ const bx=PX+CW;
+ badge(g,PX+CW*0.55,TOP+rows*RH+64,1,PX+CW*0.5,yOf(812.03)+RH-2);
+ badge(g,PX+16,TOP+rows*RH+64,2,PX+30,yOf(812.00)+RH-2);
+ badge(g,bx+CW+8,yOf(812.07)+13,3,bx+CW-8,yOf(812.07)+13);
+ badge(g,PX+CW-6,yOf(812.03)-10,4,PX+CW-10,yOf(812.03)+8);
+ badge(g,bx-6,yOf(812.09)+6,5,bx+6,yOf(812.08)+4);
+ badge(g,bx+CW*0.5+44,TOP+rows*RH+64,6,bx+CW*0.5+20,TOP+rows*RH+40);
+ badge(g,PX+3*CW+CW-14,TOP-24,7);
+ add(g,"text",{x:PX,y:TOP+rows*RH+92,class:"mut",style:"font-size:11px"},"Each row is $0.01 of price. Volume is Nasdaq-only.");}
+
+/* ---- 6 profile ---- */
+{const g=document.getElementById("proffig");const lo=798.1,hi=815.6,step=0.7,n=Math.round((hi-lo)/step);
+ const Y=p=>300-(p-lo)/(hi-lo)*270,X0=120;
+ const shape=p=>{const d=(p-806.4);return Math.max(0.04,Math.exp(-d*d/18))};
+ for(let i=0;i<n;i++){const p=lo+i*step;let w=shape(p)*170;if(p>808.9&&p<810.1)w=10;if(p<798.9)w=8;if(p>814.2)w=Math.max(w,26);
+  const inVA=p>=803.2&&p<=810.9;add(g,"rect",{x:X0,y:Y(p+step)+0.5,width:w,height:Math.max(1,Y(p)-Y(p+step)-1),fill:inVA?"var(--series)":"var(--axis)",opacity:inVA?0.55:0.8})}
+ add(g,"line",{x1:X0-6,x2:X0+176,y1:Y(806.4),y2:Y(806.4),stroke:"var(--ink)","stroke-width":1.5});
+ add(g,"text",{x:X0+190,y:Y(806.4)+4,style:"font-size:11px"},"POC");badge(g,X0+218,Y(806.4)+14,1);
+ add(g,"path",{d:`M${X0+178} ${Y(810.9)} h6 V${Y(803.2)} h-6`,stroke:"var(--series)",fill:"none","stroke-width":1.5});
+ add(g,"text",{x:X0+190,y:Y(809)+4,class:"t2",style:"font-size:11px"},"VA");badge(g,X0+218,Y(809),2);
+ const br=(x,a,b,lab,n)=>{add(g,"path",{d:`M${x+6} ${Y(b)} h-6 V${Y(a)} h6`,stroke:"var(--ink2)",fill:"none","stroke-width":1.5});add(g,"text",{x:x-4,y:(Y(a)+Y(b))/2+4,"text-anchor":"end",class:"t2",style:"font-size:11px"},lab);badge(g,x-14,(Y(a)+Y(b))/2+20,n)};
+ br(70,799.0,805.1,"OR",3);br(110,798.1,807.8,"IB",4);
+ add(g,"text",{x:X0+20,y:Y(809.5)+4,class:"cl",style:"font-size:11px"},"← single prints");badge(g,X0+110,Y(809.5),7);
+ add(g,"text",{x:X0+40,y:Y(798.5)+4,class:"cl",style:"font-size:11px"},"buying tail");badge(g,X0+118,Y(798.5),8);
+ add(g,"text",{x:10,y:16,class:"bold"},"Today's profile");
+ add(g,"text",{x:10,y:322,class:"mut",style:"font-size:11px"},"Blue = value area (70% of volume). Drawing only.");}
+
+/* ---- 7 ladder ---- */
+{const g=document.getElementById("ladfig");const lo=796,hi=816,Y=p=>280-(p-lo)/(hi-lo)*260,px=812.40;
+ add(g,"line",{x1:120,x2:120,y1:Y(hi),y2:Y(lo),stroke:"var(--axis)","stroke-width":2});
+ const lev=[["pVAH",811.95,1],["pPOC",804.3,1],["PM high",803.17,2],["Block 25k",801.87,3],["PM low",799.79,2],["pVAL",797.8,1]];
+ lev.forEach(([n,v,b])=>{add(g,"line",{x1:110,x2:230,y1:Y(v),y2:Y(v),stroke:"var(--series)","stroke-dasharray":"5 4","stroke-width":1.5});
+  add(g,"text",{x:236,y:Y(v)+4,class:"t2",style:"font-size:11px"},n);
+  add(g,"text",{x:104,y:Y(v)+4,"text-anchor":"end",class:"mono "+(v>px?"up":"dn"),style:"font-size:11px"},(v>px?"+":"−")+Math.abs(v-px).toFixed(2))});
+ // bar touching zone
+ add(g,"rect",{x:150,y:Y(812.9),width:16,height:Y(811.9)-Y(812.9),fill:"var(--buy)",rx:2});
+ add(g,"rect",{x:144,y:Y(812.9)-Y(812.9)+Y(812.93),width:28,height:Y(811.87)-Y(812.93),fill:"none",stroke:"var(--call)","stroke-dasharray":"3 2"});
+ add(g,"text",{x:176,y:Y(813.4),class:"cl",style:"font-size:10px"},"bar ± 3¢ reaches pVAH");
+ add(g,"line",{x1:116,x2:124,y1:Y(px),y2:Y(px),stroke:"var(--ink)","stroke-width":3});
+ add(g,"text",{x:10,y:Y(px)-6,class:"bold",style:"font-size:11px"},"price 812.40");
+ badge(g,320,Y(811.95),1);badge(g,320,Y(803.17)-4,2);badge(g,300,Y(801.87)+22,3,290,Y(801.87)+8);badge(g,30,Y(797.8)+24,5,50,Y(797.8)+8);}
+
+/* ---- 8 alerts ---- */
+{const g=document.getElementById("alfig");const H=["Time","Setup","Side","Entry","Stop","Target","Result","R"],xs=[12,70,220,290,360,430,500,660];
+ add(g,"rect",{x:1,y:1,width:718,height:110,rx:8,fill:"var(--surface)",stroke:"var(--axis)"});
+ H.forEach((h,i)=>add(g,"text",{x:xs[i],y:24,class:"mut mono",style:"font-size:10px;letter-spacing:.06em",...(i>=3&&i!==6?{"text-anchor":"start"}:{})},h.toUpperCase()));
+ const R=[["10:52","stacked_imbalance","long","807.12","806.48","807.76","T1 then BE","+0.50R","up"],["11:28","absorption_fade","long","811.30","810.05","812.55","open","+0.36R","up"]];
+ R.forEach((r,j)=>{const y=52+j*28;add(g,"line",{x1:8,x2:710,y1:y-18,y2:y-18,stroke:"var(--grid)"});
+  if(j===1)add(g,"rect",{x:6,y:y-16,width:706,height:26,rx:4,fill:"var(--bg)",stroke:"var(--call)","stroke-dasharray":"3 2"});
+  r.slice(0,8).forEach((c,i)=>add(g,"text",{x:xs[i],y:y,class:(i>=3&&i<=5?"mono":"")+(i===7?" mono "+r[8]:""),style:"font-size:12px"},c))});
+ badge(g,40,132,1,40,98);badge(g,395,132,2,395,98);badge(g,580,132,3,580,98);badge(g,700,132,4,700,92);}
+})();
+</script>
+
+</body></html>
